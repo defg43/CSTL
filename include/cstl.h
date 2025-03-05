@@ -1,6 +1,10 @@
 #ifndef _CSTD_H_
 #define _CSTD_H_
 
+#define CSTL_alloc malloc
+#define CSTL_realloc realloc
+#define CSTL_dealloc free
+
 // containers
 #define dynarray(T) struct dynarray_##T {					\
 	T *at;													\
@@ -8,7 +12,35 @@
 	size_t capacity;										\
 }
 
-#define create_dynarray(T)
+// this just creates an empty array
+#define create_dynarray(T) ({								\
+	dynarray(T) ret = {										\
+		.at = NULL,											\
+		.count = 0,											\
+		.capacity = 0, 										\
+	};														\
+	return ret;												\
+})
+
+#define dynarray_append(array, element) ({					\
+	size_t element_byte_size = sizeof(array.at[0]);			\
+	if(array.count >= array.capacity) {						\
+		void *realloc_result = NULL;						\
+		if(realloc_result = 								\
+			CSTL_realloc(array.at, 							\
+			2 * array.capacity * element_byte_size )) {		\
+			array.at = realloc_result;						\
+			array.capacity *= 2;							\
+			array.at[array.count] = element;				\
+			array.count++;									\
+			return true;									\
+		}													\
+		return false;										\
+	} else if(array.count < array.capacity) {				\
+		array.at[array.count] =  element;					\
+		array.count++;										\
+	}														\
+})
 
 #define stack(T) struct stack_##T {							\
 	T *at;													\
