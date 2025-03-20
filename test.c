@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "include/cstl.h"
+#include "witc/foreach.h"
 
 void print_int_dynarray(dynarray(int) arr) {
 	printf("ptr: %p, ", arr.at);
@@ -29,6 +30,19 @@ bool test_dynarray() {
     if (arr.at[0] != 10) return false;
 
     destroy_dynarray(arr);
+
+    dynarray(int) arr2 = create_dynarray(int);
+    dynarray_append(arr2, 1);
+    dynarray_append(arr2, 2);
+    dynarray_append(arr2, 3);
+    dynarray_append(arr2, 4);
+    dynarray_append(arr2, 5);
+
+	foreach(int i of arr2) {
+		printf("the nuber in arr2 is %d\n", i);
+	}
+    
+    destroy_dynarray(arr2);
     return true;
 }
 
@@ -40,7 +54,7 @@ bool test_stack() {
     if (stack_top(st) != 5) return false;
     if (!stack_push(st, 10)) return false;
     if (stack_top(st) != 10) return false;
-    if (!stack_pop(st)) return false;
+    if (stack_pop(st).valid) return false;
     if (stack_top(st) != 5) return false;
 
     destroy_stack(st);
@@ -65,9 +79,9 @@ bool test_hashtable() {
 bool test_hashset() {
     hashset(int) hs = create_hashset(int);
 
-    hashset_insert(hs, 42, int);
+    hashset_insert(hs, 42);
     if (!hashset_contains(hs, 42)) return false;
-    hashset_insert(hs, 99, int);
+    hashset_insert(hs, 99);
     if (!hashset_contains(hs, 99)) return false;
     hashset_remove(hs, 42);
     if (hashset_contains(hs, 42)) return false;

@@ -162,10 +162,12 @@
 })
 
 #define stack_pop(stack) ({                                 \
-    bool return_value = false;                              \
+    struct {												\
+    	typeof(stack.at[0]) value;							\
+    	bool valid;											\
+    } return_value;			                     			\
     if (stack.count == 0) {                                 \
-        fprintf(stderr, "Error: Stack underflow\n");        \
-        return_value = false;                               \
+        return_value.valid = false;                         \
     } else {                                                \
         stack.count--;                                      \
         if (stack.count * 4 < stack.capacity) {             \
@@ -176,9 +178,9 @@
                 stack.capacity /= 2;                        \
             }                                               \
         }                                                   \
-        return_value = true;                                \
+        return_value.value = stack_top(stack);              \
     }                                                       \
-    return_value;                                           \
+      return_value;                                         \
 })
 
 #define stack_top(stack) ({                                 \
@@ -252,8 +254,8 @@
         }                                                  	\
     }                                                      	\
                                                            	\
-    free((ht).key);                                        	\
-    free((ht).value);                                      	\
+    CSTL_dealloc((ht).key);                              	\
+    CSTL_dealloc((ht).value);                             	\
                                                            	\
     (ht).key = new_keys;                                   	\
     (ht).value = new_values;                               	\
@@ -310,7 +312,7 @@
 })
 
 #define destroy_hashtable(ht) ({                    		\
-    free((ht).key); free((ht).value);               		\
+    CSTL_dealloc((ht).key); free((ht).value);         		\
     (ht).key = NULL; (ht).value = NULL;             		\
     (ht).count = 0; (ht).capacity = 0;             			\
 })
@@ -331,10 +333,11 @@
 
 #define hashset_function(value, cap) ((value) % (cap))
 
-#define hashset_expand(hs, T) ({         					\
+#define hashset_expand(hs) ({ 	        					\
     size_t new_capacity = ((hs).capacity == 0) ? 			\
     	4 : (hs).capacity * 2; 								\
-    T *new_data = malloc(new_capacity * sizeof(T)); 		\
+    typeof(hs.data) new_data =								\
+    	malloc(new_capacity * sizeof(*(hs).data));			\
     uint8_t *new_occupied = 								\
     	malloc(new_capacity * sizeof(uint8_t)); 			\
     if (!new_data || !new_occupied) {    					\
@@ -354,14 +357,14 @@
             new_data[new_index] = (hs).data[i]; 			\
         }                                					\
     }                                    					\
-    free((hs).data);                     					\
+    CSTL_dealloc((hs).data);              					\
     (hs).data = new_data;                					\
     (hs).capacity = new_capacity;        					\
 })
 
-#define hashset_insert(hs, value, T) ({  					\
+#define hashset_insert(hs, value) ({	  					\
     if ((hs).count * 2 >= (hs).capacity) { 					\
-        hashset_expand(hs, T);           					\
+        hashset_expand(hs);		           					\
     }                                    					\
     size_t index = hashset_function(value, (hs).capacity); 	\
     while ((hs).data[index] != 0) {      					\

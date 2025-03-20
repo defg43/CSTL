@@ -1,0 +1,6 @@
+[submodule "include/witc"]
+	path = include/witc
+	url = git@github.com:defg43/witc.git
+[submodule "witc"]
+	path = witc
+	url = git@github.com:defg43/witc.git
